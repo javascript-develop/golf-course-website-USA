@@ -53,53 +53,7 @@ app.get("/cancel", (req, res) => res.send("Cancelled"));
 
 
 // chatbot code 
-const WebSocket = require('ws');
-const wss = new WebSocket.Server({ port: process.env.PORT || 8080 });
 
-const clients = new Map(); // Map to store connected clients
-
-wss.on('connection', (ws) => {
-  console.log('Client connected');
-
-  ws.on('message', (message) => {
-    console.log(`Received message: ${message}`);
-  
-    const parsedMessage = JSON.parse(message);
-    const sender = parsedMessage.sender;
-    const text = parsedMessage.text && parsedMessage.text.message;
-
-    if (sender === 'owner') {
-      // Handle admin messages
-      const adminResponse = JSON.stringify({ message: 'Admin received your message' });
-      ws.send(adminResponse);
-
-      // Send the response to all user clients
-      clients.forEach((client, role) => {
-        if (role === 'user') {
-          const userResponse = JSON.stringify({ message: `Admin replied: ${text}` });
-          client.send(userResponse);
-        }
-      });
-    } else {
-      // Handle user messages
-      const response = JSON.stringify({ message: `Server received: ${text}` });
-      ws.send(response);
-
-      // Add user client to the clients map
-      clients.set('user', ws);
-    }
-  });
-
-  ws.on('close', () => {
-    console.log('Client disconnected');
-    // Remove the client from the clients map
-    clients.forEach((client, role) => {
-      if (client === ws) {
-        clients.delete(role);
-      }
-    });
-  });
-});
 
 // subs server code
 
