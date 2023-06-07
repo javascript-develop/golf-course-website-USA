@@ -2,101 +2,15 @@ const OrderDB = require("../modal/orderModal");
 const Payment = require("../modal/paymentModel");
 const CourseDB = require("../modal/coursesModal");
 const User = require("../modal/userModal");
-
-exports.newOrder = async (req, res, next) => {
-  res.setHeader('Content-Type', 'application/json')
-  try {
-    const { shippingInfo, orderItems } = req.body;
-    const { name, email } = shippingInfo || {};
-    const { quantity, id } = orderItems;
-
-    const order = await OrderDB.create({
-      productId: id,
-      name,
-      email,
-      limit: quantity,
-    });
-
-    res.status(200).json({
-      success: true,
-      order,
-    });
-
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-
-// payment router
-exports.paymentHendler = async (req, res, next) => {
-
-  res.setHeader('Content-Type', 'application/json')
-  try {
-    const {
-      orderItems,
-      shippingInfo,
-      paidPrice,
-      emails,
-    } = req.body;
-    const { id } = orderItems[0] || {};
-
-    const { name, email, address, country } = shippingInfo || {};
-
-    const order = await Payment.create({
-      productId: id,
-      name,
-      email,
-      address,
-      country,
-      paidPrice,
-    });
-
-    const makeAdmin = await User.updateOne(
-      { email: emails },
-      {
-        $set: { status: "PAID" },
-      }
-    );
-
-    if (makeAdmin.n === 0) {
-      // No matching user was found
-      res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    } else if (makeAdmin.nModified === 0) {
-      // The user has already been updated
-      res.status(400).json({
-        success: false,
-        message: "User already updated",
-      });
-    } else {
-      // The user was successfully updated
-      res.status(200).json({
-        success: true,
-        order,
-      });
-    }
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-
-
-// exports.postOrder = async (req, res, next) => {
+const stripe = require("stripe")(
+  "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"
+);
+// exports.newOrder = async (req, res, next) => {
 //   try {
+ 
 //     const { shippingInfo, orderItems } = req.body;
-//     const { quantity, id } = orderItems;
+//     console.log(req.body)
+//     const { quantity , id } = orderItems;
 //     const { name, email } = shippingInfo;
 
 //     const order = await OrderDB.create({
@@ -105,19 +19,122 @@ exports.paymentHendler = async (req, res, next) => {
 //       email,
 //       limit: quantity,
 //     });
-
 //     res.status(200).json({
 //       success: true,
-//       order: order.toObject(),
+//       order,
 //     });
 //   } catch (error) {
 //     console.log(error);
-//     res.status(500).json({
-//       success: false,
-//       message: error.message,
-//     });
 //   }
 // };
+
+const mongoose = require('mongoose');
+const { ObjectId } = mongoose.Types;
+exports.newOrder = async (req, res, next) => {
+  try {
+    const { shippingInfo, orderItems } = req.body;
+    const { quantity, id } = orderItems;
+    const { name, email } = shippingInfo;
+
+    let productId;
+    if (!id) {
+      // Generate a random product ID
+      productId = generateRandomProductId();
+    } else {
+      productId = id;
+    }
+
+    let limit;
+    if (!quantity) {
+      // Generate a random limit
+      limit = generateRandomLimit();
+    } else {
+      limit = quantity;
+    }
+    if (!ObjectId.isValid(productId)) {
+      throw new Error('Invalid productId');
+    }
+    const order = await OrderDB.create({
+      productId: ObjectId(productId),
+      name,
+      email,
+      limit,
+    });
+
+    res.status(200).json({
+      success: true,
+      order,
+    });
+  } catch (error) {
+    console.log(error);
+    // Handle error response
+  }
+};
+
+function generateRandomProductId() {
+  return '63d8f26b99966bb3c8cd1147'; // Replace with your desired product ID
+}
+
+function generateRandomLimit() {
+  return Math.floor(Math.random() * 10) + 1; // Generate a random limit between 1 and 10
+}
+
+
+
+// payment router
+exports.paymentHendler = async (req, res, next) => {
+  try {
+
+    const {
+      orderItems,
+      shippingInfo,
+      // name,
+      // email,
+      // address,
+      // country,,
+      paidPrice,
+      emails,
+    } = req.body;
+    const { id } = orderItems;
+    const { name, email, address, country } = shippingInfo;
+    let productId;
+    if (!id) {
+      // Generate a random product ID
+      productId = generateRandomProductId();
+    } else {
+      productId = id;
+    }
+    console.log(emails);
+    const order = await Payment.create({
+      productId,
+      name,
+      email,
+      address,
+      country,
+      paidPrice,
+    });
+    const makeAdmin = await User.updateOne(
+      { _id: emails },
+      {
+        $set: { status: "PAID" },
+      }
+    );
+    console.log(req.body);
+    if (makeAdmin.modifiedCount > 0) {
+      res.status(200).json({
+        success: true,
+        order,
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        order,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 exports.getAllOrders = async (req, res, next) => {
   try {
@@ -328,7 +345,6 @@ exports.sellersLimitDeccress = async (req, res, next) => {
   }
   console.log(sellersLimmit);
 };
-
 
 exports.myOrder = async (req, res, next) => {
   try {
