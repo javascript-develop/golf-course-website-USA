@@ -4,7 +4,7 @@ const cors = require("cors");
 const sgMail = require('@sendgrid/mail');
 app.use(
   cors({
-    origin: "https://game-26a73.web.app",
+    origin: "http://localhost:3000",
   })
 );
 app.use(cors());
@@ -100,7 +100,6 @@ wss.on('connection', (ws) => {
     });
   });
 });
-
 
 // subs server code
 
