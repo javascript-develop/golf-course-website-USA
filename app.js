@@ -1,22 +1,18 @@
-const express =require("express");
+const express = require("express");
 const app = express();
 const cors = require("cors");
 const sgMail = require('@sendgrid/mail');
-const bodyParser = require('body-parser');
-
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "https://michigansbestgolfdeals.com",
   })
 );
 app.use(cors());
 // const cookieParser = require('cookie-parser')....
 const fileUpload = require("express-fileupload");
+// middelwar
 // app.use(cookieParser())
 app.use(express.json());
-
-// Use body-parser middleware to parse request bodies
-app.use(bodyParser.json());
 
 app.use(fileUpload());
 app.use(express.static("public"));
@@ -32,8 +28,9 @@ app.use("/api/v1/user", userRouter);
 app.use("/api/v1/courses", courseRouter);
 app.use("/api/v1/order", orderRouter);
 app.use("/api/v1/contect", contectHandeler);
-// stripe 
-const stripe = require('stripe')('sk_test_51M8nImIzNDPNWkV5o9evL2xavXquzW1SeEWTrEQJZMQHsBh7d8IFMfkBzHvZ2q8gcJXgOP4Eu76v5fyqnB3ady3H00MHKhAFbO');
+
+// stripe gateway 
+const stripe = require('stripe')('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');
 app.post('/pay', async (req, res) => {
   const { amount, paymentMethodId } = req.body;
   console.log(amount, "amount ok");
@@ -53,6 +50,57 @@ app.post('/pay', async (req, res) => {
 });
 
 app.get("/cancel", (req, res) => res.send("Cancelled"));
+
+
+// chatbot code 
+const WebSocket = require('ws');
+const wss = new WebSocket.Server({ port: process.env.PORT || 8080 });
+
+const clients = new Map(); // Map to store connected clients
+
+wss.on('connection', (ws) => {
+  console.log('Client connected');
+
+  ws.on('message', (message) => {
+    console.log(`Received message: ${message}`);
+  
+    const parsedMessage = JSON.parse(message);
+    const sender = parsedMessage.sender;
+    const text = parsedMessage.text && parsedMessage.text.message;
+
+    if (sender === 'owner') {
+      // Handle admin messages
+      const adminResponse = JSON.stringify({ message: 'Admin received your message' });
+      ws.send(adminResponse);
+
+      // Send the response to all user clients
+      clients.forEach((client, role) => {
+        if (role === 'user') {
+          const userResponse = JSON.stringify({ message: `Admin replied: ${text}` });
+          client.send(userResponse);
+        }
+      });
+    } else {
+      // Handle user messages
+      const response = JSON.stringify({ message: `Server received: ${text}` });
+      ws.send(response);
+
+      // Add user client to the clients map
+      clients.set('user', ws);
+    }
+  });
+
+  ws.on('close', () => {
+    console.log('Client disconnected');
+    // Remove the client from the clients map
+    clients.forEach((client, role) => {
+      if (client === ws) {
+        clients.delete(role);
+      }
+    });
+  });
+});
+
 
 // subs server code
 
