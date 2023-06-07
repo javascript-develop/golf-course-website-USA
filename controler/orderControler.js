@@ -8,7 +8,7 @@ exports.newOrder = async (req, res, next) => {
   try {
     const { shippingInfo, orderItems } = req.body;
     const { name, email } = shippingInfo || {};
-    const { quantity, id } = orderItems || {}; // make orderItems optional
+    const { quantity, id } = orderItems;
 
     const order = await OrderDB.create({
       productId: id,
