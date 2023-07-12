@@ -389,15 +389,16 @@ exports.myActiveCourses = async (req, res, next) => {
 
 exports.allPayments = async (req, res, next) => {
   try {
-    const payments = await Payment.find()
+    const payments = await payments.find()
     console.log(payments)
     res.send({ success: true, payments })
   }
   catch (e) {
-    console.log(e);
+    console.log(e,"Payment");
   }
 
 }
+
 exports.getAllPromoCode = async (req, res, next) => {
   try {
     const promeCode = await Discount.find()
@@ -408,6 +409,7 @@ exports.getAllPromoCode = async (req, res, next) => {
     console.log(e);
   }
 }
+
 exports.generateCuponCode = async (req, res, next) => {
   console.log(req.body)
   const { amount, code, expiresAt, usageLimit } = req.body;
