@@ -4,7 +4,7 @@ const cors = require("cors");
 const sgMail = require('@sendgrid/mail');
 app.use(
   cors({
-    origin: "https://michigansbestgolfdeals.com",
+    origin: "http://localhost:3000",
   })
 );
 app.use(cors());
@@ -54,6 +54,48 @@ app.get("/cancel", (req, res) => res.send("Cancelled"));
 
 
 // chatbot code 
+const bodyParser = require('body-parser');
+// const login = require('facebook-chat-api');
+
+// app.use(bodyParser.json());
+
+// app.get('/', (req, res) => {
+//   res.send('Server is up and running');
+// });
+
+// // Endpoint to receive incoming messages from Facebook
+// app.post('/webhook', (req, res) => {
+//   const message = req.body.entry[0].messaging[0];
+//   const senderId = message.sender.id;
+//   const messageText = message.message.text;
+
+//   // Handle the received message and generate a response
+//   handleIncomingMessage(senderId, messageText);
+
+//   res.sendStatus(200);
+// });
+
+// // Facebook Chat API login and setup
+// login({ email: 'your_facebook_email@example.com', password: 'your_facebook_password' }, (err, api) => {
+//   if (err) {
+//     console.error('Failed to log in:', err);
+//     process.exit(1);
+//   }
+
+//   console.log('Logged in as', api.getCurrentUserID());
+
+//   // Set up event listener for incoming messages
+//   api.listenMqtt((err, message) => {
+//     if (err) {
+//       console.error('Error receiving message:', err);
+//     } else {
+//       // Handle the received message and generate a response
+//       handleIncomingMessage(message.senderID, message.body);
+//     }
+//   });
+// });
+
+
 
 
 // subs server code
