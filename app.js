@@ -4,7 +4,7 @@ const cors = require("cors");
 const sgMail = require('@sendgrid/mail');
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "https://michigansbestgolfdeals.com",
   })
 );
 app.use(cors());
@@ -54,46 +54,80 @@ app.get("/cancel", (req, res) => res.send("Cancelled"));
 
 
 // chatbot code 
+
 const bodyParser = require('body-parser');
-// const login = require('facebook-chat-api');
+const axios = require('axios');
 
-// app.use(bodyParser.json());
 
-// app.get('/', (req, res) => {
-//   res.send('Server is up and running');
-// });
+app.use(bodyParser.json());
 
-// // Endpoint to receive incoming messages from Facebook
-// app.post('/webhook', (req, res) => {
-//   const message = req.body.entry[0].messaging[0];
-//   const senderId = message.sender.id;
-//   const messageText = message.message.text;
+const PAGE_ACCESS_TOKEN = 'YOUR_PAGE_ACCESS_TOKEN'; // Replace with your Facebook page access token
+const ADMIN_FACEBOOK_ID = 'ADMIN_FACEBOOK_USER_ID'; // Replace with your admin Facebook user ID
 
-//   // Handle the received message and generate a response
-//   handleIncomingMessage(senderId, messageText);
+const messageQueue = []; // In-memory queue to store incoming messages
 
-//   res.sendStatus(200);
-// });
+app.get('/', (req, res) => {
+  res.send('Server is up and running');
+});
 
-// // Facebook Chat API login and setup
-// login({ email: 'your_facebook_email@example.com', password: 'your_facebook_password' }, (err, api) => {
-//   if (err) {
-//     console.error('Failed to log in:', err);
-//     process.exit(1);
-//   }
+// Endpoint to receive incoming messages from Facebook Messenger
+app.post('/messenger-webhook', (req, res) => {
+  const messagingEvents = req.body.entry[0].messaging;
 
-//   console.log('Logged in as', api.getCurrentUserID());
+  // Handle each messaging event
+  messagingEvents.forEach((event) => {
+    if (event.message && event.message.text && event.sender && event.sender.id) {
+      const senderId = event.sender.id; // Facebook Messenger ID of the user
+      const messageText = event.message.text; // Received message text
 
-//   // Set up event listener for incoming messages
-//   api.listenMqtt((err, message) => {
-//     if (err) {
-//       console.error('Error receiving message:', err);
-//     } else {
-//       // Handle the received message and generate a response
-//       handleIncomingMessage(message.senderID, message.body);
-//     }
-//   });
-// });
+      // Enqueue the incoming message along with the sender's Facebook Messenger ID
+      messageQueue.push({ senderId, messageText });
+    }
+  });
+
+  res.sendStatus(200);
+});
+
+// Background process to process queued messages and deliver replies
+setInterval(() => {
+  while (messageQueue.length > 0) {
+    const { senderId, messageText } = messageQueue.shift();
+
+    // Process the incoming message and generate a response
+    const responseText = `Received a message from user with ID ${senderId}: "${messageText}". This is an automated response.`;
+
+    // If the sender's Facebook Messenger ID is the admin ID, no need to reply
+    if (senderId !== ADMIN_FACEBOOK_ID) {
+      // Reply to the user using Facebook Messenger
+      sendMessengerResponse(senderId, responseText);
+    }
+  }
+}, 5000); // Check the queue every 5 seconds (adjust this interval as needed)
+
+app.listen(3001, () => {
+  console.log('Server is listening on port 3001');
+});
+
+// Send a message to a Facebook user using Facebook Messenger
+function sendMessengerResponse(recipientId, responseText) {
+  const url = `https://graph.facebook.com/v12.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`;
+
+  const messageData = {
+    recipient: { id: recipientId },
+    message: { text: responseText },
+  };
+
+  axios
+    .post(url, messageData)
+    .then((response) => {
+      console.log('Messenger response sent:', response.data);
+    })
+    .catch((error) => {
+      console.error('Error sending Messenger response:', error.message);
+    });
+}
+
+
 
 
 
