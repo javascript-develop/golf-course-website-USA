@@ -19,14 +19,14 @@ exports.createContect = async (req, res, next) => {
       port: 587,
       secure: false,
       auth: {
-        user:"rubelrana019914@gmail.com",
-        pass: "groufyzbteehyfes",
+        user:"michigansbestgolfdeals@gmail.com",
+        pass: "bdgjooyjhwevpgfk",
       },
     });
 
     const mailOptions = {
       from: "your-gmail-username",
-      to: "rubelrana019914@gmail.com",
+      to: "michigansbestgolfdeals@gmail.com",
       subject: "New message from website",
       text: `Name: ${name}\nPhone: ${phone}\nEmail: ${email}\nSubject: ${subject}\nMessage: ${message}`,
     };

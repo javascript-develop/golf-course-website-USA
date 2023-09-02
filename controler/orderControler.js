@@ -1,6 +1,7 @@
 const OrderDB = require("../modal/orderModal");
 const Payment = require("../modal/paymentModel");
 const CourseDB = require("../modal/coursesModal");
+const nodemailer = require('nodemailer');
 const User = require("../modal/userModal");
 const stripe = require("stripe")(
   "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"
@@ -79,61 +80,106 @@ function generateRandomLimit() {
   return Math.floor(Math.random() * 10) + 1; // Generate a random limit between 1 and 10
 }
 
-
-
+// nodemailer email system
+const transporter = nodemailer.createTransport({
+  service: 'Gmail', // Use the Gmail SMTP service (or you can use other SMTP services)
+  auth: {
+    user:"michigansbestgolfdeals@gmail.com", // Your Gmail email address
+    pass: "bdgjooyjhwevpgfk", // Your Gmail password or App Password if you're using 2-factor authentication
+  },
+});
 // payment router
 exports.paymentHendler = async (req, res, next) => {
   try {
-
     const {
-      orderItems,
-      shippingInfo,
-      // name,
-      // email,
-      // address,
-      // country,,
-      paidPrice,
-      emails,
+        orderItems,
+        shippingInfo,
+        paidPrice,
+        emails, // Assuming you use this to identify the user to update as "PAID"
     } = req.body;
+
     const { id } = orderItems;
     const { name, email, address, country } = shippingInfo;
+
     let productId;
+
     if (!id) {
-      // Generate a random product ID
-      productId = generateRandomProductId();
+        // Generate a random product ID
+        productId = generateRandomProductId(); // Replace this with your actual logic to generate product IDs
     } else {
-      productId = id;
+        productId = id;
     }
+
     console.log(emails);
+
+    // Create a payment record
     const order = await Payment.create({
-      productId,
-      name,
-      email,
-      address,
-      country,
-      paidPrice,
+        productId,
+        name,
+        email,
+        address,
+        country,
+        paidPrice,
     });
+
+    // Update user status to "PAID"
     const makeAdmin = await User.updateOne(
-      { _id: emails },
-      {
-        $set: { status: "PAID" },
-      }
+        { _id: emails },
+        { $set: { status: "PAID" } }
     );
+
     console.log(req.body);
+
     if (makeAdmin.modifiedCount > 0) {
-      res.status(200).json({
-        success: true,
-        order,
-      });
+        // Send a payment confirmation email
+        const mailOptions = {
+          from: 'your-gmail-username',
+          to: email,
+          subject: 'Payment Confirmation',
+          text: `Dear ${name},\n\nThank you for your payment of $${paidPrice}. Your order has been processed successfully.
+      
+      We are delighted to welcome you to MGBD (Michigan Golf Discount). By joining us, you are not only gaining 
+      access to great discounts and exclusive offers but also contributing to our mission of supporting local
+       veteran organizations and promoting junior golf throughout the state of Michigan.
+      
+      Here's what you can look forward to as a member:
+      - Access to exclusive discounts and promotions from our partner golf courses.
+      - Regular notifications about new discounts and exciting golf events.
+      - The opportunity to enjoy the game you love while giving back to our community.
+      
+      Your support means the world to us, and we look forward to providing you with an exceptional golfing experience.
+      
+      Thank you once again for choosing MGBD, and we wish you many enjoyable rounds on the course!
+      
+      Sincerely,
+      Michigansbestgolfdeals`
+      };      
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error(error);
+            } else {
+                console.log('Email sent: ' + info.response);
+            }
+        });
+
+        res.status(200).json({
+            success: true,
+            order,
+        });
     } else {
-      res.status(400).json({
-        success: false,
-        order,
-      });
+        res.status(400).json({
+            success: false,
+            order,
+        });
     }
-  } catch (error) {
-    console.log(error);
-  }
+} catch (error) {
+    console.error(error);
+    res.status(500).json({
+        success: false,
+        error: "An error occurred during payment processing.",
+    });
+}
 };
 
 exports.getAllOrders = async (req, res, next) => {

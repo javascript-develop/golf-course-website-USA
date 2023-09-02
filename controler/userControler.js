@@ -1,19 +1,67 @@
 const UserDB = require("../modal/userModal");
 const sendToken = require("../utilities/sendToken");
 
+const nodemailer = require("nodemailer");
+
 exports.userRegister = async (req, res, next) => {
   try {
     const { name, email, role, adviserUserName } = req.body;
     const user = await UserDB.findOne({ email: email });
-    if (user)
-      return res
-        .status(202)
-        .send({ success: false, message: "User Already Exists" });
+
+    if (user) {
+      return res.status(202).send({ success: false, message: "User Already Exists" });
+    }
+
     const adduser = await UserDB.create({ name, email, role, adviserUserName });
-    // res.send({ success: true, message: "register Successfull" });
+
+    // Send custom email to new user
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+      auth: {
+        user:"michigansbestgolfdeals@gmail.com",
+        pass: "bdgjooyjhwevpgfk",
+      },
+    });
+
+    const mailOptions = {
+      from: "your-gmail-username",
+      to: email, // Email of the new user
+      subject: "Welcome to Our Site",
+      html: `
+          <html>
+          <body style="font-family: Arial, sans-serif;">
+  
+              <h2>Dear ${name},</h2>
+  
+              <p>Thank you for joining our email list. We're thrilled to have you as a part of our community!</p>
+  
+              <p>To get started, please click on the confirmation link we've sent to your email address. This will verify your subscription and ensure you receive our updates.</p>
+  
+              <p>Additionally, we invite you to connect with us on our Facebook page. By doing so, you'll stay informed about our latest deals and offers as soon as they become available.</p>
+  
+              <p><a href="https://www.facebook.com/profile.php?id=100089921170979" target="_blank" ><BsFacebook />Like us on Facebook</a></p>
+  
+              <p>If you have any questions or need assistance, feel free to reach out to us anytime. We're here to help!</p>
+  
+              <p>Best regards,<br>MBGD</p>
+  
+          </body>
+          </html>
+      `,
+  };  
+
+    await transporter.sendMail(mailOptions);
+
+    // Send response to client
     sendToken(adduser, 200, res);
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Error registering user.",
+    });
   }
 };
 
