@@ -133,7 +133,7 @@ exports.paymentHendler = async (req, res, next) => {
     if (makeAdmin.modifiedCount > 0) {
         // Send a payment confirmation email
         const mailOptions = {
-          from: 'your-gmail-username',
+          from: 'michigansbestgolfdeals@gmail.com',
           to: email,
           subject: 'Payment Confirmation',
           text: `Dear ${name},\n\nThank you for your payment of $${paidPrice}. Your order has been processed successfully.

@@ -26,7 +26,7 @@ exports.userRegister = async (req, res, next) => {
     });
 
     const mailOptions = {
-      from: "your-gmail-username",
+      from: "michigansbestgolfdeals@gmail.com",
       to: email, // Email of the new user
       subject: "Welcome to Our Site",
       html: `

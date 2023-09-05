@@ -53,56 +53,56 @@ app.post('/pay', async (req, res) => {
 app.get("/cancel", (req, res) => res.send("Cancelled"));
 
 
+
+
 // chatbot code 
 
-const bodyParser = require('body-parser');
-const axios = require('axios');
+// const bodyParser = require('body-parser');
+// const axios = require('axios');
+// app.use(bodyParser.json());
 
+// const PAGE_ACCESS_TOKEN = 'YOUR_PAGE_ACCESS_TOKEN'; // Replace with your Facebook page access token
+// const ADMIN_FACEBOOK_ID = 'ADMIN_FACEBOOK_USER_ID'; // Replace with your admin Facebook user ID
 
-app.use(bodyParser.json());
+// const messageQueue = []; // In-memory queue to store incoming messages
 
-const PAGE_ACCESS_TOKEN = 'YOUR_PAGE_ACCESS_TOKEN'; // Replace with your Facebook page access token
-const ADMIN_FACEBOOK_ID = 'ADMIN_FACEBOOK_USER_ID'; // Replace with your admin Facebook user ID
+// app.get('/', (req, res) => {
+//   res.send('Server is up and running');
+// });
 
-const messageQueue = []; // In-memory queue to store incoming messages
+// // Endpoint to receive incoming messages from Facebook Messenger
+// app.post('/messenger-webhook', (req, res) => {
+//   const messagingEvents = req.body.entry[0].messaging;
 
-app.get('/', (req, res) => {
-  res.send('Server is up and running');
-});
+//   // Handle each messaging event
+//   messagingEvents.forEach((event) => {
+//     if (event.message && event.message.text && event.sender && event.sender.id) {
+//       const senderId = event.sender.id; // Facebook Messenger ID of the user
+//       const messageText = event.message.text; // Received message text
 
-// Endpoint to receive incoming messages from Facebook Messenger
-app.post('/messenger-webhook', (req, res) => {
-  const messagingEvents = req.body.entry[0].messaging;
+//       // Enqueue the incoming message along with the sender's Facebook Messenger ID
+//       messageQueue.push({ senderId, messageText });
+//     }
+//   });
 
-  // Handle each messaging event
-  messagingEvents.forEach((event) => {
-    if (event.message && event.message.text && event.sender && event.sender.id) {
-      const senderId = event.sender.id; // Facebook Messenger ID of the user
-      const messageText = event.message.text; // Received message text
+//   res.sendStatus(200);
+// });
 
-      // Enqueue the incoming message along with the sender's Facebook Messenger ID
-      messageQueue.push({ senderId, messageText });
-    }
-  });
+// // Background process to process queued messages and deliver replies
+// setInterval(() => {
+//   while (messageQueue.length > 0) {
+//     const { senderId, messageText } = messageQueue.shift();
 
-  res.sendStatus(200);
-});
+//     // Process the incoming message and generate a response
+//     const responseText = `Received a message from user with ID ${senderId}: "${messageText}". This is an automated response.`;
 
-// Background process to process queued messages and deliver replies
-setInterval(() => {
-  while (messageQueue.length > 0) {
-    const { senderId, messageText } = messageQueue.shift();
-
-    // Process the incoming message and generate a response
-    const responseText = `Received a message from user with ID ${senderId}: "${messageText}". This is an automated response.`;
-
-    // If the sender's Facebook Messenger ID is the admin ID, no need to reply
-    if (senderId !== ADMIN_FACEBOOK_ID) {
-      // Reply to the user using Facebook Messenger
-      sendMessengerResponse(senderId, responseText);
-    }
-  }
-}, 5000); // Check the queue every 5 seconds (adjust this interval as needed)
+//     // If the sender's Facebook Messenger ID is the admin ID, no need to reply
+//     if (senderId !== ADMIN_FACEBOOK_ID) {
+//       // Reply to the user using Facebook Messenger
+//       sendMessengerResponse(senderId, responseText);
+//     }
+//   }
+// }, 5000); // Check the queue every 5 seconds (adjust this interval as needed)
 
 app.listen(3001, () => {
   console.log('Server is listening on port 3001');
@@ -127,59 +127,49 @@ function sendMessengerResponse(recipientId, responseText) {
     });
 }
 
-
-
-
-
-
 // subs server code
+
+const nodemailer = require("nodemailer");
+
+// Create a transporter using Gmail SMTP credentials
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user:"michigansbestgolfdeals@gmail.com",
+    pass: "bdgjooyjhwevpgfk",
+  },
+});
 
 app.post("/api/subscribe", async (req, res) => {
   const { email } = req.body;
-  console.log(email)
-  // Send email to user using SendGrid
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-  const userMsg = {
-    to: email,
-    from: "rubelrana019914@gmail.com",
-    subject: "Thanks for subscribing!",
-    text:"Hi, thanks for subscribing!",
-    html: `<p>"Hi, thanks for subscribing!</p>`
-  };
-  try {
-    await sgMail.send(userMsg);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to send email" });
-    return;
-  }
+  console.log(email);
 
-  // Send email to admin using SendGrid
-  const adminMsg = {
-    to: "rubelrana019914@gmail.com",
-    from: "rubelrana019914@gmail.com",
+  // Create the email message
+  const userMsg = {
+    from: "michigansbestgolfdeals@gmail.com",
+    to: "michigansbestgolfdeals@gmail.com",
     subject: "New subscriber",
     text: `${ email } has new subscribed to the mailing list.`,
     html: `<p>${ email } has new subscribed to the mailing list.</p>`
   };
-try {
-  await sgMail.send(adminMsg);
-} catch (error) {
-  console.error(error);
-  res.status(500).json({ message: "Failed to send email" });
-  return;
-}
-const subscriber = new subscribeModal({
-  email,
-});
-try {
-  await subscriber.save();
-} catch (error) {
-  console.error(error);
-  res.status(500).json({ message: "Failed to save subscriber data" });
-  return;
-}
-res.status(200).json({ message: "Success" });
+
+  try {
+    // Send the email
+    await transporter.sendMail(userMsg);
+
+    // Save subscriber data to your database (if needed)
+    const subscriber = new subscribeModal({
+      email,
+    });
+    await subscriber.save();
+
+    res.status(200).json({ message: "Success" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to send email" });
+  }
 });
 
 app.use("/", (req, res) => {
