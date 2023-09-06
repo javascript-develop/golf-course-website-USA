@@ -2,11 +2,13 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const sgMail = require('@sendgrid/mail');
-app.use(
-  cors({
-    origin: "https://game-26a73.web.app",
-  })
-);
+// Enable CORS for a specific origin
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', 'https://game-26a73.web.app');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
 app.use(cors());
 // const cookieParser = require('cookie-parser')....
 const fileUpload = require("express-fileupload");
