@@ -1,5 +1,5 @@
 const express = require("express");
-const { createContect, getAllContectList, getContectDetels, deleteContect } = require("../controler/contectControler");
+const { createContect, getAllContectList, getContectDetels, deleteContect, } = require("../controler/contectControler");
 
 
 const router = express.Router();

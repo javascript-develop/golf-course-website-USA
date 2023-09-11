@@ -99,6 +99,9 @@ app.post("/api/subscribe", async (req, res) => {
   }
 });
 
+// post code 
+
+
 app.use("/", (req, res) => {
   res.send("hellw world");
 });
