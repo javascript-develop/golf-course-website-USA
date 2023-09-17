@@ -10,7 +10,7 @@ const {
 
 const router = express.Router();
 
-router.post("/comment", commentpost);
+router.post("/comment/commentpost", commentpost);
 router.get("/comment/comments", comments);
 router.get("/comment/pendingcomments", pendingcomments);
 router.put("/comment/approveComment/:id", approveComment);
