@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 // const mongoose = require('mongoose');
+const Comment = require('./modal/commentModal');
 require('dotenv').config();
 app.use(
   cors({
@@ -26,12 +27,12 @@ const errorHandeler = require("./utilities/errorHendeler");
 const contectHandeler = require("./router/contect");
 const subscribeModal = require("./modal/subscribeModal");
 const { userLogin } = require("./controler/userControler");
-const commentRouter = require("./router/comment");
+// const commentRouter = require("./router/comment");
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/courses", courseRouter);
 app.use("/api/v1/order", orderRouter);
 app.use("/api/v1/contect", contectHandeler);
-app.use("/api/v1/comment", commentRouter);
+// app.use("/api/v1/comment", commentRouter);
 
 // stripe gateway 
 const stripe = require('stripe')('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');
@@ -102,7 +103,7 @@ app.post("/api/subscribe", async (req, res) => {
   }
 });
 
-// // // post code 
+// // post code 
 // mongoose.connect(process.env.DATABASE_URI, {
 //   useNewUrlParser: true,
 //   useUnifiedTopology: true,
