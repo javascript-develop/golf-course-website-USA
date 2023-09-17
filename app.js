@@ -1,11 +1,11 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-// const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 require('dotenv').config();
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "https://michigansbestgolfdeals.com",
   })
 );
 app.use(cors());
@@ -103,14 +103,14 @@ app.post("/api/subscribe", async (req, res) => {
 });
 
 // // post code 
-// mongoose.connect(process.env.DATABASE_URI, {
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true,
-// });
-// const CommentSchema = new mongoose.Schema({
-//   text: String,
-//   status: String,
-// });
+mongoose.connect(process.env.DATABASE_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+const CommentSchema = new mongoose.Schema({
+  text: String,
+  status: String,
+});
 
 // const Comment = mongoose.model('Comment', CommentSchema);
 app.post('/commentpost', async (req, res) => {
