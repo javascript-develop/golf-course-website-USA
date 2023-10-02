@@ -1,7 +1,6 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-// const mongoose = require('mongoose');
 const Comment = require('./modal/commentModal');
 require('dotenv').config();
 app.use(
@@ -39,10 +38,15 @@ const stripe = require('stripe')('sk_live_51M44pJLIjYzKoJMknAnr70NYQqk9DBr4lqg7k
 app.post('/pay', async (req, res) => {
   const { amount, paymentMethodId } = req.body;
   console.log(amount, "amount ok");
+    // Calculate the fee (6% of the original amount)
+  const fee = amount * 0.06;
+
+  // Add the fee to the original amount
+  const totalAmountWithFee = amount + fee;
 
   try {
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount * 100, // convert amount to cents
+      amount: totalAmountWithFee * 100, // convert amount to cents
       currency: "usd",
       payment_method: paymentMethodId,
       confirm: true,
@@ -57,9 +61,7 @@ app.post('/pay', async (req, res) => {
 app.get("/cancel", (req, res) => res.send("Cancelled"));
 
 
-
 // subs server code
-
 const nodemailer = require("nodemailer");
 
 // Create a transporter using Gmail SMTP credentials
@@ -102,16 +104,6 @@ app.post("/api/subscribe", async (req, res) => {
     res.status(500).json({ message: "Failed to send email" });
   }
 });
-
-// // post code 
-// mongoose.connect(process.env.DATABASE_URI, {
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true,
-// });
-// const CommentSchema = new mongoose.Schema({
-//   text: String,
-//   status: String,
-// });
 
 // const Comment = mongoose.model('Comment', CommentSchema);
 app.post('/commentpost', async (req, res) => {
