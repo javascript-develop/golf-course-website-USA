@@ -2,11 +2,10 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const Comment = require('./modal/commentModal');
-const CoursesDB = require("./modal/coursesModal");
 require('dotenv').config();
 app.use(
   cors({
-    origin: "https://game-26a73.web.app",
+    origin: "https://michigansbestgolfdeals.com",
   })
 );
 app.use(cors());
@@ -106,31 +105,6 @@ app.post("/api/subscribe", async (req, res) => {
   }
 });
 
-app.get("/getAllCourse",async (req, res, next) => {
-  try {
-    const { category, kewword } = req.query;
-    if (category) {
-      if (category == "All") {
-        const course = await CoursesDB.find({});
-        res.send({ success: true, course });
-      } else {
-        const course = await CoursesDB.find({
-          $or: [
-            { category: { $regex: category, $options: "i" } },
-            { name: { $regex: kewword, $options: "i" } },
-            // { name: kewword },
-          ],
-        });
-        res.send({ success: true, course });
-      }
-    } else {
-      const course = await CoursesDB.find({});
-      res.send({ success: true, course });
-    }
-  } catch (e) {
-    console.log(e);
-  }
-});
 // const Comment = mongoose.model('Comment', CommentSchema);
 app.post('/commentpost', async (req, res) => {
   try {
