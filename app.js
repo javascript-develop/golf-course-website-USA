@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-// const Comment = require('./modal/commentModal');
+const Comment = require('./modal/commentModal');
 require('dotenv').config();
 app.use(
   cors({
