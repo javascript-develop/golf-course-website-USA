@@ -5,7 +5,7 @@ const Comment = require('./modal/commentModal');
 require('dotenv').config();
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "https://michigansbestgolfdeals.com",
   })
 );
 app.use(cors());
