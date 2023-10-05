@@ -1,12 +1,14 @@
 const express = require("express");
-const app = express();
 const cors = require("cors");
+const app = express();
 const Comment = require('./modal/commentModal');
 require('dotenv').config();
 
 app.use(cors({
-  origin: 'https://michigansbestgolfdeals.com', 
-  credentials: true,
+  origin: 'https://michigansbestgolfdeals.com',
+  methods: 'GET', // Allow only GET requests for this endpoint
+  optionsSuccessStatus: 200,
+  credentials: true, // Enable credentials (cookies, authorization headers, etc.)
 }));
 
 
