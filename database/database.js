@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 require('dotenv').config();
 
+mongoose.set('strictQuery', false);
 const database = () => {
   const uri = process.env.database_uri;
 

@@ -2,10 +2,11 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const Comment = require('./modal/commentModal');
+const CoursesDB = require("./modal/coursesModal");
 require('dotenv').config();
 app.use(
   cors({
-    origin: "https://michigansbestgolfdeals.com",
+    origin: "http://localhost:3000",
   })
 );
 app.use(cors());
@@ -61,6 +62,31 @@ app.post('/pay', async (req, res) => {
 app.get("/cancel", (req, res) => res.send("Cancelled"));
 
 
+app.get('/getallcourse', async (req, res) => {
+  try {
+    const { category, kewword } = req.query;
+    if (category) {
+      if (category == "All") {
+        const course = await CoursesDB.find({});
+        res.send({ success: true, course });
+      } else {
+        const course = await CoursesDB.find({
+          $or: [
+            { category: { $regex: category, $options: "i" } },
+            { name: { $regex: kewword, $options: "i" } },
+            // { name: kewword },
+          ],
+        });
+        res.send({ success: true, course });
+      }
+    } else {
+      const course = await CoursesDB.find({});
+      res.send({ success: true, course });
+    }
+  } catch (e) {
+    console.log(e);
+  }
+});
 // subs server code
 const nodemailer = require("nodemailer");
 
