@@ -9,7 +9,7 @@ app.use(cors({
   credentials: true, // If you need to include credentials (cookies, headers) in the request
 }));
 
-app.use(cors());
+
 // const cookieParser = require('cookie-parser')....
 const fileUpload = require("express-fileupload");
 // middelwar
