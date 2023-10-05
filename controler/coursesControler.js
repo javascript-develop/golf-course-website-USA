@@ -152,26 +152,21 @@ exports.activeCourse = async (req, res, next) => {
 exports.getAllCourse = async (req, res, next) => {
   try {
     const { category, kewword } = req.query;
-    if (category) {
-      if (category == "All") {
-        const course = await CoursesDB.find({});
-        res.send({ success: true, course });
-      } else {
-        const course = await CoursesDB.find({
-          $or: [
-            { category: { $regex: category, $options: "i" } },
-            { name: { $regex: kewword, $options: "i" } },
-            // { name: kewword },
-          ],
-        });
-        res.send({ success: true, course });
-      }
-    } else {
-      const course = await CoursesDB.find({});
-      res.send({ success: true, course });
+    const query = {};
+
+    if (category && category !== "All") {
+      query.category = { $regex: category, $options: "i" };
     }
+
+    if (kewword) {
+      query.name = { $regex: kewword, $options: "i" };
+    }
+
+    const course = await CoursesDB.find(query);
+    res.send({ success: true, course });
   } catch (e) {
     console.log(e);
+    res.status(500).json({ success: false, error: e.message });
   }
 };
 

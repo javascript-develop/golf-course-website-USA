@@ -6,7 +6,7 @@ require('dotenv').config();
 
 app.use(cors({
   origin: 'https://michigansbestgolfdeals.com', 
-  credentials: true, // If you need to include credentials (cookies, headers) in the request
+  credentials: true,
 }));
 
 
