@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-require('dotenv').config();
 
 const courcesShema = new mongoose.Schema({
   name: {

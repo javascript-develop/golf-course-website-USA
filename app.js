@@ -6,11 +6,8 @@ require('dotenv').config();
 
 app.use(cors({
   origin: 'https://michigansbestgolfdeals.com',
-  methods: 'GET', // Allow only GET requests for this endpoint
-  optionsSuccessStatus: 200,
-  credentials: true, // Enable credentials (cookies, authorization headers, etc.)
+  credentials: true, 
 }));
-
 
 // const cookieParser = require('cookie-parser')....
 const fileUpload = require("express-fileupload");
